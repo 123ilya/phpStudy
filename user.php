@@ -26,8 +26,8 @@ class Storage //Создаём класс Storage
     {
         file_put_contents(self::FILE_PATH, json_encode($this->objectsList));
     }
-    public function read() // Функция, читающая содержание файла users.json, декодирующая его и
-    // перезаписывающая этим содержанием переменную $objectsList.
+    public function read() // Функция, читает содержание файла users.json, декодирует его и
+    // перезаписывает этим содержанием переменную $objectsList.
     {
         if (file_exists(self::FILE_PATH)) {
             $this->objectsList = json_decode(file_get_contents(self::FILE_PATH));
@@ -35,10 +35,11 @@ class Storage //Создаём класс Storage
     }
 }
 
-// C - POST
-// R - GET
-// U - PUT
-// D - DELETE
+// C - POST /user.php
+// R - GET /user.php?id=1
+// U - PUT /user.php
+// D - DELETE /user.php?id=1
+// R - GET /user.php
 class UserStorage extends Storage
 {
     public function addUser()
@@ -82,23 +83,27 @@ class UserStorage extends Storage
 
     public function getUsers() 
     {
-        return json_encode ($this->objectsList);
+        return json_encode($this->objectsList);
     }
 }
 
 $userStorage = new UserStorage();
 
 switch ($_SERVER['REQUEST_METHOD']) {
-    case 'POST':
-        $userStorage->addUser();
-        break;
-    case 'GET':
-        $userStorage->getUser();
-        break;
-    case 'PUT':
-        $userStorage->updateUser();
-        break;
-    case 'DELETE':
-        $userStorage->deleteUser();
-        break;
+case 'POST':
+    $userStorage->addUser();
+    break;
+case 'GET':
+    if (isset($_GET['id'])) {
+        $userStorage->getUser($_GET['id']);
+    } else {$userStorage->getUsers();}
+    break;
+case 'PUT':
+    $userStorage->updateUser();
+    break;
+case 'DELETE':
+    if (isset($_GET['id'])) {
+        $userStorage->deleteUser($_GET['id']);
+    }
+    break;
 }
