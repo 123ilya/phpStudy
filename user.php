@@ -2,16 +2,16 @@
 
 class User // Создаём класс User
 {
-    protected $email;
-    protected $nickName;
-    protected $name;
-    protected $age;
-    protected $id;
+    public $email;
+    public $nickname;
+    public $name;
+    public $age;
+    public $id;
 
-    public function __construct($email, $nickName, $name, $age)
+    public function __construct($email, $nickname, $name, $age)
     {
         $this->email = $email;
-        $this->nickName = $nickName;
+        $this->nickname = $nickname;
         $this->name = $name;
         $this->age = $age;
         $this->id = rand(1, 100);
@@ -22,10 +22,17 @@ class Storage //Создаём класс Storage
 {
     const FILE_PATH = './users.json'; //Константа хранящая путь к файлу - хранилищу.
     public $objectsList = []; // Массив, хранящий объекты, созданные при помощи класса User
+    
     public function store() // функция, записывающая в файл, инкодированный в формат json массив $objectsList
     {
         file_put_contents(self::FILE_PATH, json_encode($this->objectsList));
     }
+
+    public function __construct()
+    {
+        $this->read();
+    }
+
     public function read() // Функция, читает содержание файла users.json, декодирует его и
     // перезаписывает этим содержанием переменную $objectsList.
     {
@@ -44,8 +51,9 @@ class UserStorage extends Storage
 {
     public function addUser()
     {
-        $user = new User($_POST['email'], $_POST['nickName'], $_POST['name'], $_POST['age']);
+        $user = new User($_POST['email'], $_POST['nickname'], $_POST['name'], $_POST['age']);
         $this->objectsList[] = $user;
+        $this->store();
     }
 
     public function deleteUser($id)
@@ -53,8 +61,10 @@ class UserStorage extends Storage
         foreach ($this->objectsList as $key => $user) {
             if ($user->id === $id) {
                 unset($this->objectsList[$key]);
+                $this->store();
+                break;
+
             }
-            break;
         }
     }
 
@@ -63,11 +73,13 @@ class UserStorage extends Storage
         foreach ($this->objectsList as $key => $user) {
             if ($user->id === $_POST['id']) {
                 $this->objectsList['key']->email = $_POST['email'];
-                $this->objectsList['nickName'] = $_POST['nickName'];
+                $this->objectsList['nickname'] = $_POST['nickname'];
                 $this->objectsList['name'] = $_POST['name'];
                 $$this->objectsList['age'] = $_POST['age'];
+                $this->store();
+                break;
+
             }
-            break;
         }
     }
 
@@ -88,7 +100,7 @@ class UserStorage extends Storage
 }
 
 $userStorage = new UserStorage();
-
+// die (var_dump($_SERVER) );
 switch ($_SERVER['REQUEST_METHOD']) {
 case 'POST':
     $userStorage->addUser();
